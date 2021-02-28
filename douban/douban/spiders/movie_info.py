@@ -19,6 +19,10 @@ class MovieInfoSpider(scrapy.Spider):
     """
     name = 'movie_info'
 
+    custom_settings = {
+        'ITEM_PIPELINES': {'douban.pipelines.MovieInfoPipeline': 301},
+    }
+
     movie_ids = ['34841067', '27619748', '26826330', '34880302', '34779692', '26935283', '34825886']
 
     def start_request(self):

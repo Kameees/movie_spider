@@ -4,6 +4,8 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
+import random
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -101,3 +103,22 @@ class DoubanDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class MyUseragentMiddleware(UserAgentMiddleware):
+    """
+    设置User-Agent
+    """
+
+    def __init__(self, user_agent):
+        self.user_agent = user_agent
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(
+            user_agent=crawler.settings.get('USER_AGENTS')
+        )
+
+    def process_request(self, request, spider):
+        agent = random.choice(self.user_agent)
+        request.headers['User-Agent'] = agent
