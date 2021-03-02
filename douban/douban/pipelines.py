@@ -8,8 +8,6 @@
 from itemadapter import ItemAdapter
 import csv
 
-from douban.douban.items import MovieItem, CommentItem
-
 
 class MovieInfoPipeline(object):
     def open_spider(self, spider):

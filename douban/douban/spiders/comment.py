@@ -1,9 +1,8 @@
 import scrapy
-from lxml import etree
 import re
 
 
-from douban.douban.items import CommentItem
+from douban.items import CommentItem
 
 
 class CommentSpider(scrapy.Spider):
@@ -12,35 +11,37 @@ class CommentSpider(scrapy.Spider):
     """
     name = 'comment'
 
+    allowed_domains = ['movie.douban.com']
+
     custom_settings = {
         'ITEM_PIPELINES': {'douban.pipelines.CommentPipeline': 302},
     }
 
     movie_ids = ['34841067', '27619748', '26826330', '34880302', '34779692', '26935283', '34825886']
-
-    def start_request(self):
-        start_url = 'https://movie.douban.com/subject/{}/comments?start={}&limit=20&sort=new_score&status=P'
-        for movie_id in self.movie_ids:
-            for i in range(51):
-                url = start_url.format(movie_id, str(i * 20))
-                yield scrapy.Request(url=url, callback=self.parse, meta={'movie_id': movie_id})
+    start_url = 'https://movie.douban.com/subject/{}/comments?start={}&limit=20&sort=new_score&status=P'
+    start_urls = []
+    for movie_id in movie_ids:
+        for i in range(0, 26):
+            start_urls.append(start_url.format(movie_id, str(i * 20)))
 
     def parse(self, response):
-        selector = etree.HTML(response.text)
-        item = CommentItem()
-        item['movie_id'] = response.meta['movie_id']
-        item['user_name'] = selector.xpath('//span[@class="comment-info"]/a/text()')
-        rating_star = selector.xpath('//span[@class="comment-info"]/span[2]/@class')
-        if 'ranting' in rating_star:
-            pattern = re.compile('\d+(\\.\\d+){0,1}')
-            ranting = pattern.search(rating_star).group()
-            item['rating'] = int(ranting)/10
-        else:
-            item['rating'] = None
-        item['comment_time'] = selector.xpath('//span[@class="comment-time "]/@title')
-        item['comment_info'] = selector.xpath('//p[@class=" comment-content"]/span/text()')
-        item['votes_num'] = selector.xpath('//span[@class="votes vote-count"]/text()')
-        item['user_url'] = selector.xpath('//span[@class="comment-info"]/a/@href')
-        item['comment_date'] = selector.xpath('//span[@class="comment-time "]/text()')
-
-        yield item
+        comment_url = response.url
+        pattern = re.compile('\d+(\\.\\d+){0,1}')
+        comments = response.xpath('//div[@class="comment"]')
+        for comment in comments:
+            item = CommentItem()
+            item['movie_id'] = pattern.search(comment_url).group()
+            item['user_name'] = comment.xpath('.//span[@class="comment-info"]/a/text()').extract_first()
+            rating_star = comment.xpath('.//span[@class="comment-info"]/span[2]/@class').extract_first()
+            if pattern.search(rating_star):
+                ranting = pattern.search(rating_star).group()
+                item['rating'] = float(ranting) / 10
+            else:
+                item['rating'] = None
+            item['comment_time'] = comment.xpath('.//span[@class="comment-time "]/@title').extract_first()
+            item['comment_info'] = comment.xpath('./p[@class=" comment-content"]/span/text()').extract_first()
+            item['votes_num'] = comment.xpath('.//span[@class="votes vote-count"]/text()').extract_first()
+            item['user_url'] = comment.xpath('.//span[@class="comment-info"]/a/@href').extract_first()
+            comment_date = comment.xpath('.//span[@class="comment-time "]/text()').extract_first()
+            item['comment_date'] = comment_date.replace('\n', '').strip()
+            yield item
