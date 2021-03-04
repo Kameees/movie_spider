@@ -6,9 +6,6 @@
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 import random
 
-# useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
-
 
 class MyUseragentMiddleware(UserAgentMiddleware):
     """
@@ -28,5 +25,3 @@ class MyUseragentMiddleware(UserAgentMiddleware):
     def process_request(self, request, spider):
         agent = random.choice(self.user_agent)
         request.headers['User-Agent'] = agent
-
-
