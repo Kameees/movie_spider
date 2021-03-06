@@ -16,6 +16,7 @@ class MaoyanPipeline:
         self.writer.writerow(['movie_id',
                               'movie_name',
                               'sum_box_desc',
+                              'box_desc',
                               'box_rate',
                               'show_count_rate',
                               'seat_count_rate'])
@@ -24,6 +25,7 @@ class MaoyanPipeline:
         self.writer.writerow([item['movie_id'],
                               item['movie_name'],
                               item['sum_box_desc'],
+                              item['box_desc'],
                               item['box_rate'],
                               item['show_count_rate'],
                               item['seat_count_rate']])

@@ -17,6 +17,7 @@ class PiaofangSpider(scrapy.Spider):
             item["movie_id"] = main_data['movieInfo']["movieId"]
             item["movie_name"] = main_data['movieInfo']["movieName"]
             item["sum_box_desc"] = main_data['sumBoxDesc']
+            item["box_desc"] = main_data['boxDesc']
             item["box_rate"] = main_data['boxRate']
             item["show_count_rate"] = main_data['showCountRate']
             item["seat_count_rate"] = main_data['seatCountRate']
